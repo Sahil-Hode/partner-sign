@@ -7,7 +7,7 @@ interface SignaturePadProps {
   onChange: (value: string) => void
 }
 
-export function SignaturePad({ value, onChange }: SignaturePadProps): JSX.Element {
+export function SignaturePad({ value, onChange }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
 

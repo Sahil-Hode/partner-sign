@@ -14,7 +14,7 @@ export function Button({
   size = 'md',
   className = '',
   ...props
-}: ButtonProps): JSX.Element {
+}: ButtonProps) {
   const base = 'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
   const variants: Record<ButtonVariant, string> = {
     primary: 'bg-slate-900 text-white hover:bg-slate-800',

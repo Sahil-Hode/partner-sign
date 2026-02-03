@@ -8,7 +8,7 @@ interface StepperProps {
   steps: string[]
 }
 
-export function Stepper({ currentStep, totalSteps, steps }: StepperProps): JSX.Element {
+export function Stepper({ currentStep, totalSteps, steps }: StepperProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 justify-center">
       {steps.map((label, index) => {

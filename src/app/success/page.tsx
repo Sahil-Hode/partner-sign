@@ -8,7 +8,7 @@ import { AgreementCard, AgreementBody } from '@/components/AgreementCard'
 import { Button } from '@/components/Button'
 import { useAgreement } from '@/context/AgreementContext'
 
-export default function SuccessPage(): JSX.Element {
+export default function SuccessPage() {
   const router = useRouter()
   const { data, resetData } = useAgreement()
 

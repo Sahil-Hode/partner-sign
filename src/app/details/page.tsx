@@ -23,7 +23,7 @@ interface FormData {
   signatureDataUrl: string
 }
 
-export default function DetailsPage(): JSX.Element {
+export default function DetailsPage() {
   const router = useRouter()
   const { data, updateData } = useAgreement()
   

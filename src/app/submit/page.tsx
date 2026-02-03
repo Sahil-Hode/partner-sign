@@ -9,7 +9,7 @@ import { Button } from '@/components/Button'
 import { Stepper } from '@/components/Stepper'
 import { useAgreement } from '@/context/AgreementContext'
 
-export default function SubmitPage(): JSX.Element {
+export default function SubmitPage() {
   const router = useRouter()
   const { data, updateData } = useAgreement()
   const [confirmed, setConfirmed] = useState(false)

@@ -39,7 +39,7 @@ const defaultData: AgreementData = {
 
 const AgreementContext = createContext<AgreementContextType | undefined>(undefined)
 
-export function AgreementProvider({ children }: { children: ReactNode }): JSX.Element {
+export function AgreementProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AgreementData>(defaultData)
 
   const updateData = (updates: Partial<AgreementData>): void => {

@@ -84,7 +84,7 @@ Name: _______________________
 Signature: ____________________
 Date: ________________________`
 
-export default function HomePage(): JSX.Element {
+export default function HomePage() {
   const router = useRouter()
   const { updateData } = useAgreement()
   const [hasAgreed, setHasAgreed] = useState(false)

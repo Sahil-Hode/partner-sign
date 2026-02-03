@@ -7,7 +7,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string
 }
 
-export function FormInput({ label, error, className = '', ...props }: FormInputProps): JSX.Element {
+export function FormInput({ label, error, className = '', ...props }: FormInputProps) {
   return (
     <label className="block">
       <span className="text-sm font-medium text-slate-700">{label}</span>
@@ -27,7 +27,7 @@ interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
   error?: string
 }
 
-export function FormTextarea({ label, error, className = '', ...props }: FormTextareaProps): JSX.Element {
+export function FormTextarea({ label, error, className = '', ...props }: FormTextareaProps) {
   return (
     <label className="block">
       <span className="text-sm font-medium text-slate-700">{label}</span>
