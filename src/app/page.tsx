@@ -264,6 +264,137 @@ export default function HomePage() {
   const { updateData } = useAgreement()
   const [hasAgreed, setHasAgreed] = useState(false)
 
+  const renderAgreementText = (text: string): JSX.Element[] => {
+    const lines = text.split('\n')
+    const nodes: JSX.Element[] = []
+    let paragraph: string[] = []
+    let listType: 'ul' | 'ol' | null = null
+    let listItems: string[] = []
+
+    const isAllCapsHeading = (value: string): boolean =>
+      value.length > 3 && value === value.toUpperCase() && /[A-Z]/.test(value)
+
+    const isSectionHeading = (value: string): boolean =>
+      /^\d+\.\s+[A-Z]/.test(value) || value.startsWith('ANNEXURE') || value.startsWith('ANNEXURES')
+
+    const isSmallHeading = (value: string): boolean =>
+      value === 'TABLE OF CONTENTS' || value === 'EXECUTION' || value === 'IN WITNESS WHEREOF'
+
+    const flushParagraph = () => {
+      if (paragraph.length === 0) return
+      const content = paragraph.join('\n')
+      nodes.push(
+        <motion.p
+          key={`p-${nodes.length}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: nodes.length * 0.02 }}
+          className="mb-4 text-slate-800 leading-7 whitespace-pre-line text-justify"
+        >
+          {content}
+        </motion.p>
+      )
+      paragraph = []
+    }
+
+    const flushList = () => {
+      if (listItems.length === 0 || !listType) return
+      const ListTag = listType === 'ul' ? 'ul' : 'ol'
+      nodes.push(
+        <motion.div
+          key={`l-${nodes.length}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: nodes.length * 0.02 }}
+          className="mb-4"
+        >
+          <ListTag className={`pl-7 ${listType === 'ul' ? 'list-disc' : 'list-decimal'} text-slate-800 space-y-1`}>
+            {listItems.map((item, idx) => (
+              <li key={`${listType}-${idx}`} className="leading-7">
+                {item}
+              </li>
+            ))}
+          </ListTag>
+        </motion.div>
+      )
+      listItems = []
+      listType = null
+    }
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed) {
+        flushParagraph()
+        flushList()
+        continue
+      }
+
+      const bulletMatch = trimmed.startsWith('• ')
+      const numberedMatch = /^\d+\.\s+/.test(trimmed)
+
+      if (bulletMatch) {
+        flushParagraph()
+        if (listType !== 'ul') {
+          flushList()
+          listType = 'ul'
+        }
+        listItems.push(trimmed.replace(/^•\s+/, ''))
+        continue
+      }
+
+      if (numberedMatch) {
+        flushParagraph()
+        if (listType !== 'ol') {
+          flushList()
+          listType = 'ol'
+        }
+        listItems.push(trimmed.replace(/^\d+\.\s+/, ''))
+        continue
+      }
+
+      if (isSmallHeading(trimmed)) {
+        flushParagraph()
+        flushList()
+        nodes.push(
+          <motion.h4
+            key={`h4-${nodes.length}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: nodes.length * 0.02 }}
+            className="mt-6 mb-2 text-sm font-semibold tracking-wide text-slate-700"
+          >
+            {trimmed}
+          </motion.h4>
+        )
+        continue
+      }
+
+      if (isSectionHeading(trimmed) || isAllCapsHeading(trimmed)) {
+        flushParagraph()
+        flushList()
+        nodes.push(
+          <motion.h3
+            key={`h3-${nodes.length}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: nodes.length * 0.02 }}
+            className="mt-6 mb-2 text-base font-semibold text-slate-900"
+          >
+            {trimmed}
+          </motion.h3>
+        )
+        continue
+      }
+
+      flushList()
+      paragraph.push(line)
+    }
+
+    flushParagraph()
+    flushList()
+    return nodes
+  }
+
   const handleContinue = (): void => {
     updateData({ hasAgreed: true })
     router.push('/details')
@@ -290,17 +421,7 @@ export default function HomePage() {
 
         <AgreementBody className="max-h-[500px] overflow-y-auto">
           <div className="prose prose-slate max-w-none">
-            {AGREEMENT_TEXT.split('\n\n').map((paragraph, index) => (
-              <motion.p
-                key={index}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: index * 0.02 }}
-                className="mb-4 text-slate-800 leading-relaxed whitespace-pre-line"
-              >
-                {paragraph}
-              </motion.p>
-            ))}
+            {renderAgreementText(AGREEMENT_TEXT)}
           </div>
         </AgreementBody>
 

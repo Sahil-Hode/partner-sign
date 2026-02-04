@@ -49,6 +49,122 @@ export default function PreviewPage() {
 
   const signatureDateDisplay = formatAgreementDate(effectiveDate)
 
+  const renderAgreementText = (text: string): JSX.Element[] => {
+    const lines = text.split('\n')
+    const nodes: JSX.Element[] = []
+    let paragraph: string[] = []
+    let listType: 'ul' | 'ol' | null = null
+    let listItems: string[] = []
+
+    const isAllCapsHeading = (value: string): boolean =>
+      value.length > 3 && value === value.toUpperCase() && /[A-Z]/.test(value)
+
+    const isSectionHeading = (value: string): boolean =>
+      /^\d+\.\s+[A-Z]/.test(value) || value.startsWith('ANNEXURE') || value.startsWith('ANNEXURES')
+
+    const isSmallHeading = (value: string): boolean =>
+      value === 'TABLE OF CONTENTS' || value === 'EXECUTION' || value === 'IN WITNESS WHEREOF'
+
+    const flushParagraph = () => {
+      if (paragraph.length === 0) return
+      const content = paragraph.join('\n')
+      nodes.push(
+        <p
+          key={`p-${nodes.length}`}
+          className="mb-4 text-slate-900 leading-7 whitespace-pre-line text-justify"
+        >
+          {content}
+        </p>
+      )
+      paragraph = []
+    }
+
+    const flushList = () => {
+      if (listItems.length === 0 || !listType) return
+      const ListTag = listType === 'ul' ? 'ul' : 'ol'
+      nodes.push(
+        <div key={`l-${nodes.length}`} className="mb-4">
+          <ListTag className={`pl-7 ${listType === 'ul' ? 'list-disc' : 'list-decimal'} text-slate-900 space-y-1`}>
+            {listItems.map((item, idx) => (
+              <li key={`${listType}-${idx}`} className="leading-7">
+                {item}
+              </li>
+            ))}
+          </ListTag>
+        </div>
+      )
+      listItems = []
+      listType = null
+    }
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed) {
+        flushParagraph()
+        flushList()
+        continue
+      }
+
+      const bulletMatch = trimmed.startsWith('• ')
+      const numberedMatch = /^\d+\.\s+/.test(trimmed)
+
+      if (bulletMatch) {
+        flushParagraph()
+        if (listType !== 'ul') {
+          flushList()
+          listType = 'ul'
+        }
+        listItems.push(trimmed.replace(/^•\s+/, ''))
+        continue
+      }
+
+      if (numberedMatch) {
+        flushParagraph()
+        if (listType !== 'ol') {
+          flushList()
+          listType = 'ol'
+        }
+        listItems.push(trimmed.replace(/^\d+\.\s+/, ''))
+        continue
+      }
+
+      if (isSmallHeading(trimmed)) {
+        flushParagraph()
+        flushList()
+        nodes.push(
+          <h4
+            key={`h4-${nodes.length}`}
+            className="mt-6 mb-2 text-sm font-semibold tracking-wide text-slate-700"
+          >
+            {trimmed}
+          </h4>
+        )
+        continue
+      }
+
+      if (isSectionHeading(trimmed) || isAllCapsHeading(trimmed)) {
+        flushParagraph()
+        flushList()
+        nodes.push(
+          <h3
+            key={`h3-${nodes.length}`}
+            className="mt-6 mb-2 text-base font-semibold text-slate-900"
+          >
+            {trimmed}
+          </h3>
+        )
+        continue
+      }
+
+      flushList()
+      paragraph.push(line)
+    }
+
+    flushParagraph()
+    flushList()
+    return nodes
+  }
+
   // ---------------------------------------------------------------------------
   // Full Agreement Text — Version 1.0 (January 2026)
   // ---------------------------------------------------------------------------
@@ -390,14 +506,7 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
               </div>
 
               {/* ── Agreement Body ── */}
-              {agreementText.split('\n\n').map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="mb-4 text-slate-900 leading-relaxed whitespace-pre-line"
-                >
-                  {paragraph}
-                </p>
-              ))}
+              {renderAgreementText(agreementText)}
 
               {/* ── Execution / Signature Block ── */}
               <div className="mt-10 pt-6 border-t border-slate-300">
