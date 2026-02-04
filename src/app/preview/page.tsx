@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { FileCheck, ArrowLeft } from 'lucide-react'
@@ -49,9 +49,9 @@ export default function PreviewPage() {
 
   const signatureDateDisplay = formatAgreementDate(effectiveDate)
 
-  const renderAgreementText = (text: string): JSX.Element[] => {
+  const renderAgreementText = (text: string): ReactNode[] => {
     const lines = text.split('\n')
-    const nodes: JSX.Element[] = []
+    const nodes: ReactNode[] = []
     let paragraph: string[] = []
     let listType: 'ul' | 'ol' | null = null
     let listItems: string[] = []
