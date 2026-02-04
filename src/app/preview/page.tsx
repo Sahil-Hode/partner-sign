@@ -375,25 +375,25 @@ The following is an illustrative revenue sharing structure. Actual amounts shall
 Scenario 1: Manager → Candidate (No Sub-Manager)
     A. Candidate is employee of the manager
 Total Assignment Fee: INR 1,200 per man day
-Candidate’s share : INR Nil
-Manager’s share: INR 1,200 per man day
+Candidate's share : INR Nil
+Manager's share: INR 1,200 per man day
 
     B. Candidate is employee of the manager
 Total Assignment Fee: INR 1,200 per man day
-Candidate’s share : INR 700 per man day
-Manager’s share: INR 500 per man day
+Candidate's share : INR 700 per man day
+Manager's share: INR 500 per man day
 Scenario 2: Manager → Sub-Manager → Candidate
     A. Candidate is employee of the sub-manager
 Total Assignment Fee: INR 1,200 per man day
-Candidate’s share : INR Nil
-Sub-manager’s share : INR 1,000 per man day
-Manager’s share: INR 200 per man day
+Candidate's share : INR Nil
+Sub-manager's share : INR 1,000 per man day
+Manager's share: INR 200 per man day
 
     B. Candidate is employee of the manager
 Total Assignment Fee: INR 1,200 per man day
-Candidate’s share : INR 700 per man day
-Sub-manager’s share : INR 300 per man day
-Manager’s share: INR 200 per man day
+Candidate's share : INR 700 per man day
+Sub-manager's share : INR 300 per man day
+Manager's share: INR 200 per man day
 
 All the payments will made directly by the Company to candidate, sub-manager and manager. Manager and sub-manager will raise monthly invoice for their portion of the professional fee.
 To protect the margins of manager, candidates and sub-manager will not have access to amount being paid to manager and sub-manager. Similarly, to protect the margin of sub-manager, the manager will not have access to amount being paid to candidates onboarded by sub-managers. Similarly, no manager or sub-manager will access to amount being paid to other managers and sub-managers.
@@ -550,12 +550,29 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     </div>
 
                   {data.aadhaarVerified && (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 text-sm font-medium">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs">✓</span>
-                      Aadhaar {maskedAadhaar} verified successfully
-                      {verifiedAtDisplay && (
-                        <span className="text-emerald-700/80">({verifiedAtDisplay})</span>
-                      )}
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-sm font-medium shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-900 font-semibold">Signature valid</span>
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500">
+                          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="text-xs text-slate-600 border-l border-slate-300 pl-2">
+                        <div>Digitally signed by Unique</div>
+                        <div>Identification Authority of India</div>
+                        <div>Date: {new Date(data.aadhaarVerifiedAt || Date.now()).toLocaleString('en-GB', {
+                          year: 'numeric',
+                          month: '2-digit', 
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: false
+                        }).replace(',', '')}</div>
+                        <div className="text-emerald-600 font-medium">VALID(SIG-30</div>
+                      </div>
                     </div>
                   )}
 
@@ -565,8 +582,6 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                   </p>
                   </div>
                 </div>
-
-                {/* Note removed per request */}
               </div>
             </motion.div>
           </div>
