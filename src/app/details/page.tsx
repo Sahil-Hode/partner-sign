@@ -22,6 +22,7 @@ interface FormData {
   place: string
   aadhaarNumber: string
   aadhaarVerified: boolean
+  aadhaarVerifiedAt?: string
   signatureName: string
   signatureDataUrl: string
 }
@@ -41,6 +42,7 @@ export default function DetailsPage() {
     place: data.place,
     aadhaarNumber: data.aadhaarNumber,
     aadhaarVerified: data.aadhaarVerified || false,
+    aadhaarVerifiedAt: data.aadhaarVerifiedAt,
     signatureName: data.signatureName,
     signatureDataUrl: data.signatureDataUrl || '',
   })
@@ -50,6 +52,10 @@ export default function DetailsPage() {
   const [otpCode, setOtpCode] = useState('')
   const [otpError, setOtpError] = useState('')
   const [verificationNote, setVerificationNote] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [otpReferenceId, setOtpReferenceId] = useState<string | null>(null)
+  const [verifiedAadhaarData, setVerifiedAadhaarData] = useState<any>(null)
 
   useEffect(() => {
     if (!data.hasAgreed) {
@@ -99,33 +105,164 @@ export default function DetailsPage() {
     }
   }
 
-  const handleSendOtp = (): void => {
+  const handleSendOtp = async (): Promise<void> => {
+    // Clear previous states
+    setOtpError('')
+    setVerificationNote('')
+    
+    // Validate Aadhaar number
     if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
       setErrors(prev => ({ ...prev, aadhaarNumber: 'Aadhaar number must be 12 digits' }))
-      setVerificationNote('')
       return
     }
-    setOtpSent(true)
-    setOtpCode('')
-    setOtpError('')
-    setVerificationNote('OTP sent (UI-only). Enter any 6-digit code to verify.')
+    
+    setOtpLoading(true)
+    
+    try {
+      const response = await fetch('/api/aadhaar/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aadhaarNumber: formData.aadhaarNumber }),
+      })
+      
+      const result = await response.json()
+      
+      // Log only non-sensitive info for debugging
+      if (result.referenceId) {
+        console.log('Aadhaar OTP sent. Reference ID:', result.referenceId)
+      } else {
+        console.log('Aadhaar OTP send response received (no reference ID).')
+      }
+      
+      if (!result.success) {
+        // Handle specific error cases
+        const errorMessage = result.message || result.error || 'Failed to send OTP'
+        
+        if (errorMessage.toLowerCase().includes('not linked')) {
+          setOtpError('Aadhaar number is not linked to a mobile number')
+        } else if (errorMessage.toLowerCase().includes('invalid')) {
+          setOtpError('Invalid Aadhaar number. Please check and try again.')
+        } else if (result.details?.message) {
+          setOtpError(result.details.message)
+        } else {
+          setOtpError(errorMessage)
+        }
+        return
+      }
+      
+      // Check for reference ID
+      if (!result.referenceId) {
+        console.error('No reference ID in response:', result)
+        setOtpError('Failed to get reference ID. Please try again.')
+        return
+      }
+      
+      // Success
+      setOtpSent(true)
+      setOtpCode('')
+      setOtpReferenceId(result.referenceId)
+      setVerificationNote(`OTP sent successfully to registered mobile number (Ref: ${result.referenceId.substring(0, 8)}...)`)
+      
+    } catch (error) {
+      console.error('Send OTP Error:', error)
+      setOtpError('Network error. Please check your connection and try again.')
+    } finally {
+      setOtpLoading(false)
+    }
   }
 
-  const handleVerifyOtp = (): void => {
+  const handleVerifyOtp = async (): Promise<void> => {
+    // Clear previous states
+    setOtpError('')
+    setVerificationNote('')
+    
+    // Validate OTP sent
     if (!otpSent) {
       setOtpError('Please send OTP first')
       return
     }
+    
+    // Validate OTP format
     if (!/^\d{6}$/.test(otpCode)) {
       setOtpError('Enter a valid 6-digit OTP')
       return
     }
-    setOtpError('')
-    setVerificationNote('Aadhaar verified successfully')
-    setFormData(prev => ({ ...prev, aadhaarVerified: true }))
-    if (errors.aadhaarVerified) {
-      setErrors(prev => ({ ...prev, aadhaarVerified: '' }))
+    
+    // Validate reference ID
+    if (!otpReferenceId) {
+      setOtpError('No reference ID found. Please send OTP again.')
+      return
     }
+    
+    setVerifyLoading(true)
+    
+    try {
+      const response = await fetch('/api/aadhaar/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          otp: otpCode,
+          referenceId: otpReferenceId,
+        }),
+      })
+      
+      const result = await response.json()
+      
+      console.log('Verify OTP Response:', result) // Debug log
+      
+      if (!result.success || !result.verified) {
+        // Handle specific error cases
+        const errorMessage = result.message || result.error || 'OTP verification failed'
+        
+        if (errorMessage.toLowerCase().includes('invalid otp')) {
+          setOtpError('Invalid OTP. Please check and try again.')
+        } else if (errorMessage.toLowerCase().includes('expired')) {
+          setOtpError('OTP has expired. Please request a new one.')
+          setOtpSent(false)
+          setOtpReferenceId(null)
+        } else if (result.details?.message) {
+          setOtpError(result.details.message)
+        } else {
+          setOtpError(errorMessage)
+        }
+        return
+      }
+      
+      // Success - extract Aadhaar data if available
+      const aadhaarData = result.aadhaarData || {}
+      setVerifiedAadhaarData(aadhaarData)
+      
+      // Update form with verified name if available
+      if (aadhaarData.name && !formData.fullName) {
+        setFormData(prev => ({ ...prev, fullName: aadhaarData.name }))
+      }
+      
+      // Mark as verified
+      setFormData(prev => ({ ...prev, aadhaarVerified: true, aadhaarVerifiedAt: new Date().toISOString() }))
+      if (errors.aadhaarVerified) {
+        setErrors(prev => ({ ...prev, aadhaarVerified: '' }))
+      }
+      
+      setVerificationNote(`✓ Aadhaar verified successfully${aadhaarData.name ? ` - ${aadhaarData.name}` : ''}`)
+      
+      // Clear OTP fields
+      setOtpCode('')
+      setOtpSent(false)
+      setOtpReferenceId(null)
+      
+    } catch (error) {
+      console.error('Verify OTP Error:', error)
+      setOtpError('Network error. Please check your connection and try again.')
+    } finally {
+      setVerifyLoading(false)
+    }
+  }
+
+  const handleResendOtp = async (): Promise<void> => {
+    setOtpCode('')
+    setOtpSent(false)
+    setOtpReferenceId(null)
+    await handleSendOtp()
   }
 
   return (
@@ -185,7 +322,7 @@ export default function DetailsPage() {
                 <FormInput
                   label="PAN Number"
                   value={formData.panNumber}
-                  onChange={(e) => handleChange('panNumber', e.target.value)}
+                  onChange={(e) => handleChange('panNumber', e.target.value.toUpperCase())}
                   error={errors.panNumber}
                   placeholder="e.g., ABCDE1234F"
                   required
@@ -284,57 +421,153 @@ export default function DetailsPage() {
                       label="Aadhaar Number"
                       value={formData.aadhaarNumber}
                       onChange={(e) => {
-                        handleChange('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))
+                        const cleanValue = e.target.value.replace(/\D/g, '').slice(0, 12)
+                        handleChange('aadhaarNumber', cleanValue)
+                        // Reset verification if number changes
                         if (formData.aadhaarVerified) {
                           setFormData(prev => ({ ...prev, aadhaarVerified: false }))
+                        }
+                        // Reset OTP state if number changes
+                        if (otpSent || otpReferenceId) {
+                          setOtpSent(false)
+                          setOtpReferenceId(null)
+                          setOtpCode('')
+                          setOtpError('')
+                          setVerificationNote('')
                         }
                       }}
                       error={errors.aadhaarNumber}
                       placeholder="Enter 12-digit Aadhaar number"
                       inputMode="numeric"
                       required
+                      disabled={otpLoading || verifyLoading}
                     />
-                    <div className="grid grid-cols-3 gap-4 items-end">
-                      <div className="col-span-2">
-                        <FormInput
-                          label="OTP"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          error={otpError}
-                          placeholder="Enter 6-digit OTP"
-                          inputMode="numeric"
-                        />
+                    
+                    {/* OTP Section - Only show after OTP is sent */}
+                    {otpSent && (
+                      <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <FormInput
+                              label="Enter OTP"
+                              value={otpCode}
+                              onChange={(e) => {
+                                const cleanValue = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                setOtpCode(cleanValue)
+                                setOtpError('') // Clear error when user types
+                              }}
+                              placeholder="6-digit OTP"
+                              inputMode="numeric"
+                              maxLength={6}
+                              disabled={verifyLoading}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleResendOtp}
+                            className="mt-6"
+                            disabled={otpLoading || verifyLoading}
+                            size="sm"
+                          >
+                            Resend
+                          </Button>
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          onClick={handleVerifyOtp}
+                          disabled={otpCode.length !== 6 || verifyLoading}
+                          className="w-full"
+                        >
+                          {verifyLoading ? (
+                            <>
+                              <span className="inline-block animate-spin mr-2">⟳</span>
+                              Verifying...
+                            </>
+                          ) : (
+                            'Verify OTP'
+                          )}
+                        </Button>
+                        
+                        <p className="text-xs text-slate-600 text-center">
+                          OTP valid for 10 minutes
+                        </p>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleSendOtp}
-                        className="h-10 mt-6"
-                      >
-                        Send OTP
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Button
-                        type="button"
-                        onClick={handleVerifyOtp}
-                        disabled={!otpSent}
-                      >
-                        Verify OTP
-                      </Button>
-                      <span className="text-sm text-slate-500">Not verified</span>
-                    </div>
-                    {verificationNote && (
-                      <p className="text-sm text-slate-600">{verificationNote}</p>
                     )}
+                    
+                    {/* Send OTP Button - Only show if OTP not sent */}
+                    {!otpSent && (
+                      <Button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={formData.aadhaarNumber.length !== 12 || otpLoading}
+                        className="w-full"
+                      >
+                        {otpLoading ? (
+                          <>
+                            <span className="inline-block animate-spin mr-2">⟳</span>
+                            Sending OTP...
+                          </>
+                        ) : (
+                          'Send OTP to Registered Mobile'
+                        )}
+                      </Button>
+                    )}
+                    
+                    {/* Success/Info Messages */}
+                    {verificationNote && !otpError && (
+                      <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-blue-700">
+                        <span className="text-lg">ℹ️</span>
+                        <p className="text-sm">{verificationNote}</p>
+                      </div>
+                    )}
+                    
+                    {/* Error Messages */}
+                    {otpError && (
+                      <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                        <span className="text-lg">⚠️</span>
+                        <p className="text-sm">{otpError}</p>
+                      </div>
+                    )}
+                    
+                    {/* Validation Error */}
                     {errors.aadhaarVerified && (
-                      <p className="text-sm text-red-600 font-medium">{errors.aadhaarVerified}</p>
+                      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-700">
+                        <span className="text-lg">⚠️</span>
+                        <p className="text-sm font-medium">{errors.aadhaarVerified}</p>
+                      </div>
                     )}
                   </>
                 ) : (
-                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-sm">✓</span>
-                    <span className="text-sm font-medium">Aadhaar verified successfully</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">✓</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Aadhaar verified successfully</p>
+                        {verifiedAadhaarData?.name && (
+                          <p className="text-xs text-emerald-600 mt-0.5">
+                            Name: {verifiedAadhaarData.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, aadhaarVerified: false }))
+                        setOtpSent(false)
+                        setOtpReferenceId(null)
+                        setOtpCode('')
+                        setOtpError('')
+                        setVerificationNote('')
+                        setVerifiedAadhaarData(null)
+                      }}
+                      className="text-xs text-slate-500 hover:text-slate-700 underline"
+                    >
+                      Verify a different Aadhaar number
+                    </button>
                   </div>
                 )}
               </div>

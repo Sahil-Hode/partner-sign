@@ -29,6 +29,18 @@ export default function PreviewPage() {
   const signatureNameDisplay = data.signatureName || '_____________________'
   const partnerPlaceDisplay = data.place || '_____________________'
   const effectiveDate = data.date || new Date().toISOString().split('T')[0]
+  const maskedAadhaar = data.aadhaarNumber
+    ? `${'X'.repeat(Math.max(0, data.aadhaarNumber.length - 4))}${data.aadhaarNumber.slice(-4)}`
+    : ''
+  const verifiedAtDisplay = data.aadhaarVerifiedAt
+    ? new Date(data.aadhaarVerifiedAt).toLocaleString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : ''
 
   const formatAgreementDate = (value: string): string => {
     const dateValue = new Date(value)
@@ -533,22 +545,32 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     <p className="text-slate-900 mt-3">Name: <span className="bg-yellow-100 px-2 py-0.5 rounded">{signatureNameDisplay}</span></p>
                     <p className="text-slate-900">PAN: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPanDisplay}</span></p>
 
-                    <div className="pt-2">
-                      {data.signatureDataUrl ? (
-                        <img
-                          src={data.signatureDataUrl}
-                          alt="Partner Signature"
-                          className="h-20 border-b border-black"
-                        />
-                      ) : (
-                        <p className="text-slate-900">Signature: ____________________</p>
+                  <div className="pt-2">
+                    {data.signatureDataUrl ? (
+                      <img
+                        src={data.signatureDataUrl}
+                        alt="Partner Signature"
+                        className="h-20 border-b border-black"
+                      />
+                    ) : (
+                      <p className="text-slate-900">Signature: ____________________</p>
+                    )}
+                  </div>
+
+                  {data.aadhaarVerified && (
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 text-sm font-medium">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs">✓</span>
+                      Aadhaar {maskedAadhaar} verified successfully
+                      {verifiedAtDisplay && (
+                        <span className="text-emerald-700/80">({verifiedAtDisplay})</span>
                       )}
                     </div>
+                  )}
 
-                    <p className="text-slate-900">Date: {signatureDateDisplay}</p>
-                    <p className="text-slate-900">
-                      Place: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPlaceDisplay}</span>
-                    </p>
+                  <p className="text-slate-900">Date: {signatureDateDisplay}</p>
+                  <p className="text-slate-900">
+                    Place: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPlaceDisplay}</span>
+                  </p>
                   </div>
                 </div>
 

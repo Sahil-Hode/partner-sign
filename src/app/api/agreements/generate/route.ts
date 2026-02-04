@@ -8,7 +8,21 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { fullName, panNumber, address, city, state, jurisdiction, place, signatureName, signatureDataUrl, date } = body
+    const {
+      fullName,
+      panNumber,
+      address,
+      city,
+      state,
+      jurisdiction,
+      place,
+      signatureName,
+      signatureDataUrl,
+      date,
+      aadhaarNumber,
+      aadhaarVerified,
+      aadhaarVerifiedAt,
+    } = body
 
     // ─── env checks ───────────────────────────────────────────────────
     // FIX: removed auth_uri / token_uri / auth_provider_x509_cert_url /
@@ -424,6 +438,36 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
     // Place
     doc.text('Place: _______________________',               leftX,  yPosition)
     doc.text(`Place: ${place || '_______________________'}`, rightX, yPosition)
+    yPosition += 8
+
+    // Aadhaar verification stamp (if verified)
+    if (aadhaarVerified) {
+      const maskedAadhaar = aadhaarNumber
+        ? `${'X'.repeat(Math.max(0, String(aadhaarNumber).length - 4))}${String(aadhaarNumber).slice(-4)}`
+        : 'XXXXXXXXXXXX'
+      const verifiedAtDisplay = aadhaarVerifiedAt
+        ? new Date(aadhaarVerifiedAt).toLocaleString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : ''
+
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 128, 0)
+      doc.text(`Aadhaar ${maskedAadhaar} verified successfully`, rightX, yPosition)
+      yPosition += 5
+      if (verifiedAtDisplay) {
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(0, 128, 0)
+        doc.text(`Verified at: ${verifiedAtDisplay}`, rightX, yPosition)
+        yPosition += 5
+      }
+      doc.setTextColor(0, 0, 0)
+      doc.setFont('helvetica', 'normal')
+    }
 
     // ─── Convert to buffer ────────────────────────────────────────────
     const pdfBuffer = Buffer.from(doc.output('arraybuffer'))

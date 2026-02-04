@@ -13,6 +13,7 @@ export interface AgreementData {
   place: string
   aadhaarNumber: string
   aadhaarVerified: boolean
+  aadhaarVerifiedAt?: string
   signatureName: string
   signatureDataUrl: string
   hasAgreed: boolean
