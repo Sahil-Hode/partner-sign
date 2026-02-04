@@ -7,6 +7,7 @@ import { User, ArrowLeft } from 'lucide-react'
 import { AgreementCard, AgreementHeader, AgreementBody, AgreementFooter } from '@/components/AgreementCard'
 import { FormInput, FormTextarea } from '@/components/FormInput'
 import { Button } from '@/components/Button'
+import { SignaturePad } from '@/components/SignaturePad'
 import { Stepper } from '@/components/Stepper'
 import { useAgreement } from '@/context/AgreementContext'
 
@@ -23,7 +24,7 @@ interface FormData {
   aadhaarVerified: boolean
   aadhaarVerifiedAt?: string
   signatureName: string
-  signatureDataUrl?: string
+  signatureDataUrl: string
 }
 
 export default function DetailsPage() {
@@ -82,7 +83,7 @@ export default function DetailsPage() {
     }
     if (!formData.aadhaarVerified) newErrors.aadhaarVerified = 'Aadhaar verification is required'
     if (!formData.signatureName.trim()) newErrors.signatureName = 'Signature name is required'
-    // Signature removed per request
+    if (!formData.signatureDataUrl) newErrors.signatureDataUrl = 'Signature is required'
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -570,6 +571,23 @@ export default function DetailsPage() {
                   </div>
                 )}
               </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">E-Signature</h3>
+              <SignaturePad
+                value={formData.signatureDataUrl}
+                onChange={(value) => handleChange('signatureDataUrl', value)}
+                disabled={!formData.aadhaarVerified}
+                disabledMessage="Verify Aadhaar to unlock signature"
+              />
+              {errors.signatureDataUrl && (
+                <p className="text-sm text-red-600 font-medium mt-2">{errors.signatureDataUrl}</p>
+              )}
             </motion.div>
 
           </AgreementBody>

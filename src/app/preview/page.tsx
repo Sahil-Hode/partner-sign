@@ -366,7 +366,7 @@ This form shall be completed by each Candidate during onboarding:
     6. Data Consent: I consent to collection and processing of my personal data for Platform operations
 
 
-Signature: ________________  Date: ________________
+Signature: ________________  Date: ${signatureDateDisplay}
 
 ANNEXURE B: REVENUE SHARING STRUCTURE (SAMPLE)
 
@@ -545,6 +545,17 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     <p className="text-slate-900 mt-3">Name: <span className="bg-yellow-100 px-2 py-0.5 rounded">{signatureNameDisplay}</span></p>
                     <p className="text-slate-900">PAN: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPanDisplay}</span></p>
 
+                    <div className="pt-2">
+                      {data.signatureDataUrl ? (
+                        <img
+                          src={data.signatureDataUrl}
+                          alt="Partner Signature"
+                          className="h-20 border-b border-black"
+                        />
+                      ) : (
+                        <p className="text-slate-900">Signature: ____________________</p>
+                      )}
+                    </div>
 
                   {data.aadhaarVerified && (
                     <div className="mt-3 inline-flex items-center gap-3 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-sm font-medium shadow-sm">

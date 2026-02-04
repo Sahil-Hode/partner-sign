@@ -194,7 +194,7 @@ This form shall be completed by each Candidate during onboarding:
     6. Data Consent: I consent to collection and processing of my personal data for Platform operations
 
 
-Signature: ________________  Date: ________________
+Signature: ________________  Date: ${new Date().toLocaleDateString('en-US')}
 
 ANNEXURE B: REVENUE SHARING STRUCTURE (SAMPLE)
 

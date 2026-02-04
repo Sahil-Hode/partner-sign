@@ -310,7 +310,7 @@ This form shall be completed by each Candidate during onboarding:
     6. Data Consent: I consent to collection and processing of my personal data for Platform operations
 
 
-Signature: ________________  Date: ________________
+Signature: ________________  Date: ${effectiveDateDisplay}
 
 ANNEXURE B: REVENUE SHARING STRUCTURE (SAMPLE)
 
@@ -421,8 +421,14 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
 
     // Signature
     doc.text('Signature: ____________________',              leftX,  yPosition)
-    doc.text('Signature: ____________________',              rightX, yPosition)
-    yPosition += 6
+    if (signatureDataUrl) {
+      const format = signatureDataUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG'
+      doc.addImage(signatureDataUrl, format, rightX, yPosition - 2, 70, 25)
+      yPosition += 28
+    } else {
+      doc.text('Signature: ____________________',            rightX, yPosition)
+      yPosition += 6
+    }
 
     // Date
     doc.text('Date: ________________________',               leftX,  yPosition)
