@@ -42,7 +42,7 @@ export default function PreviewPage() {
       })
     : ''
 
-  const renderAadhaarStampBox = (): JSX.Element => (
+  const renderAadhaarStampBox = (): ReactNode => (
     <div className="mt-2 inline-flex items-center gap-3 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-sm font-medium shadow-sm">
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500">
