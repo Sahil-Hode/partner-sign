@@ -20,6 +20,8 @@ interface FormData {
   date: string
   jurisdiction: string
   place: string
+  aadhaarNumber: string
+  aadhaarVerified: boolean
   signatureName: string
   signatureDataUrl: string
 }
@@ -37,11 +39,17 @@ export default function DetailsPage() {
     date: data.date || new Date().toISOString().split('T')[0],
     jurisdiction: data.jurisdiction,
     place: data.place,
+    aadhaarNumber: data.aadhaarNumber,
+    aadhaarVerified: data.aadhaarVerified || false,
     signatureName: data.signatureName,
     signatureDataUrl: data.signatureDataUrl || '',
   })
   
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [otpError, setOtpError] = useState('')
+  const [verificationNote, setVerificationNote] = useState('')
 
   useEffect(() => {
     if (!data.hasAgreed) {
@@ -63,6 +71,11 @@ export default function DetailsPage() {
     if (!formData.date.trim()) newErrors.date = 'Date is required'
     if (!formData.jurisdiction.trim()) newErrors.jurisdiction = 'Jurisdiction is required'
     if (!formData.place.trim()) newErrors.place = 'Place is required'
+    if (!formData.aadhaarNumber.trim()) newErrors.aadhaarNumber = 'Aadhaar number is required'
+    else if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
+      newErrors.aadhaarNumber = 'Aadhaar number must be 12 digits'
+    }
+    if (!formData.aadhaarVerified) newErrors.aadhaarVerified = 'Aadhaar verification is required'
     if (!formData.signatureName.trim()) newErrors.signatureName = 'Signature name is required'
     if (!formData.signatureDataUrl) newErrors.signatureDataUrl = 'Signature is required'
     
@@ -83,6 +96,35 @@ export default function DetailsPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleSendOtp = (): void => {
+    if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
+      setErrors(prev => ({ ...prev, aadhaarNumber: 'Aadhaar number must be 12 digits' }))
+      setVerificationNote('')
+      return
+    }
+    setOtpSent(true)
+    setOtpCode('')
+    setOtpError('')
+    setVerificationNote('OTP sent (UI-only). Enter any 6-digit code to verify.')
+  }
+
+  const handleVerifyOtp = (): void => {
+    if (!otpSent) {
+      setOtpError('Please send OTP first')
+      return
+    }
+    if (!/^\d{6}$/.test(otpCode)) {
+      setOtpError('Enter a valid 6-digit OTP')
+      return
+    }
+    setOtpError('')
+    setVerificationNote('Aadhaar verified successfully')
+    setFormData(prev => ({ ...prev, aadhaarVerified: true }))
+    if (errors.aadhaarVerified) {
+      setErrors(prev => ({ ...prev, aadhaarVerified: '' }))
     }
   }
 
@@ -232,12 +274,76 @@ export default function DetailsPage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Aadhaar Verification</h3>
+              <div className="space-y-4">
+                <FormInput
+                  label="Aadhaar Number"
+                  value={formData.aadhaarNumber}
+                  onChange={(e) => {
+                    handleChange('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))
+                    if (formData.aadhaarVerified) {
+                      setFormData(prev => ({ ...prev, aadhaarVerified: false }))
+                    }
+                  }}
+                  error={errors.aadhaarNumber}
+                  placeholder="Enter 12-digit Aadhaar number"
+                  inputMode="numeric"
+                  required
+                />
+                <div className="grid grid-cols-3 gap-4 items-end">
+                  <div className="col-span-2">
+                    <FormInput
+                      label="OTP"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      error={otpError}
+                      placeholder="Enter 6-digit OTP"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSendOtp}
+                    className="h-10 mt-6"
+                  >
+                    Send OTP
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={!otpSent}
+                  >
+                    Verify OTP
+                  </Button>
+                  <span className={`text-sm ${formData.aadhaarVerified ? 'text-emerald-600' : 'text-slate-500'}`}>
+                    {formData.aadhaarVerified ? 'Verified' : 'Not verified'}
+                  </span>
+                </div>
+                {verificationNote && (
+                  <p className="text-sm text-slate-600">{verificationNote}</p>
+                )}
+                {errors.aadhaarVerified && (
+                  <p className="text-sm text-red-600 font-medium">{errors.aadhaarVerified}</p>
+                )}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
               <h3 className="text-lg font-semibold text-slate-900 mb-4">E-Signature</h3>
               <SignaturePad
                 value={formData.signatureDataUrl}
                 onChange={(value) => handleChange('signatureDataUrl', value)}
+                disabled={!formData.aadhaarVerified}
+                disabledMessage="Verify Aadhaar to unlock signature"
               />
               {errors.signatureDataUrl && (
                 <p className="text-sm text-red-600 font-medium mt-2">{errors.signatureDataUrl}</p>

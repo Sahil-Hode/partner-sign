@@ -11,6 +11,8 @@ export interface AgreementData {
   date: string
   jurisdiction: string
   place: string
+  aadhaarNumber: string
+  aadhaarVerified: boolean
   signatureName: string
   signatureDataUrl: string
   hasAgreed: boolean
@@ -34,6 +36,8 @@ const defaultData: AgreementData = {
   date: new Date().toISOString().split('T')[0],
   jurisdiction: '',
   place: '',
+  aadhaarNumber: '',
+  aadhaarVerified: false,
   signatureName: '',
   signatureDataUrl: '',
   hasAgreed: false,
