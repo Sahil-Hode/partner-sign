@@ -545,17 +545,9 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     <p className="text-slate-900 mt-3">Name: <span className="bg-yellow-100 px-2 py-0.5 rounded">{signatureNameDisplay}</span></p>
                     <p className="text-slate-900">PAN: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPanDisplay}</span></p>
 
-                  <div className="pt-2">
-                    {data.signatureDataUrl ? (
-                      <img
-                        src={data.signatureDataUrl}
-                        alt="Partner Signature"
-                        className="h-20 border-b border-black"
-                      />
-                    ) : (
+                    <div className="pt-2">
                       <p className="text-slate-900">Signature: ____________________</p>
-                    )}
-                  </div>
+                    </div>
 
                   {data.aadhaarVerified && (
                     <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 text-sm font-medium">
@@ -574,9 +566,7 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400 mt-8 italic">
-                  Note: This Agreement may be executed via digital signature, which shall have the same legal validity as physical signatures.
-                </p>
+                {/* Note removed per request */}
               </div>
             </motion.div>
           </div>

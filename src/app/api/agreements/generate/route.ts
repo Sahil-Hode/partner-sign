@@ -421,14 +421,8 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
 
     // Signature
     doc.text('Signature: ____________________',              leftX,  yPosition)
-    if (signatureDataUrl) {
-      const format = signatureDataUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG'
-      doc.addImage(signatureDataUrl, format, rightX, yPosition - 2, 70, 25)
-      yPosition += 28
-    } else {
-      doc.text('Signature: ____________________',            rightX, yPosition)
-      yPosition += 6
-    }
+    doc.text('Signature: ____________________',              rightX, yPosition)
+    yPosition += 6
 
     // Date
     doc.text('Date: ________________________',               leftX,  yPosition)
@@ -455,18 +449,31 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
           })
         : ''
 
+      const stampX = rightX
+      const stampY = yPosition + 2
+      const stampW = 85
+      const stampH = 32
+
+      doc.setDrawColor(220, 38, 38)
+      doc.setLineWidth(0.6)
+      doc.rect(stampX, stampY, stampW, stampH)
+
       doc.setFont('helvetica', 'bold')
-      doc.setTextColor(0, 128, 0)
-      doc.text(`Aadhaar ${maskedAadhaar} verified successfully`, rightX, yPosition)
-      yPosition += 5
-      if (verifiedAtDisplay) {
-        doc.setFont('helvetica', 'normal')
-        doc.setTextColor(0, 128, 0)
-        doc.text(`Verified at: ${verifiedAtDisplay}`, rightX, yPosition)
-        yPosition += 5
-      }
       doc.setTextColor(0, 0, 0)
+      doc.setFontSize(10)
+      doc.text('Signature valid', stampX + 3, stampY + 7)
+
       doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.text('Aadhaar verified successfully', stampX + 3, stampY + 13)
+      doc.text(`Aadhaar: ${maskedAadhaar}`, stampX + 3, stampY + 18)
+      if (verifiedAtDisplay) {
+        doc.text(`Date: ${verifiedAtDisplay}`, stampX + 3, stampY + 23)
+      }
+
+      doc.setFontSize(9)
+      doc.setTextColor(0, 0, 0)
+      yPosition = stampY + stampH + 2
     }
 
     // ─── Convert to buffer ────────────────────────────────────────────

@@ -15,7 +15,7 @@ export interface AgreementData {
   aadhaarVerified: boolean
   aadhaarVerifiedAt?: string
   signatureName: string
-  signatureDataUrl: string
+  signatureDataUrl?: string
   hasAgreed: boolean
   downloadLink?: string
   downloadBase64?: string
