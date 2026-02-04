@@ -59,7 +59,7 @@ export default function PreviewPage() {
     return `${day}${suffix(day)} day of ${month} ${year}`
   }
 
-  const signatureDateDisplay = formatAgreementDate(effectiveDate)
+  const signatureDateDisplay = formatAgreementDate(new Date().toISOString().split('T')[0])
 
   const renderAgreementText = (text: string): ReactNode[] => {
     const lines = text.split('\n')
@@ -546,15 +546,7 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     <p className="text-slate-900">PAN: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPanDisplay}</span></p>
 
                     <div className="pt-2">
-                      {data.signatureDataUrl ? (
-                        <img
-                          src={data.signatureDataUrl}
-                          alt="Partner Signature"
-                          className="h-20 border-b border-black"
-                        />
-                      ) : (
-                        <p className="text-slate-900">Signature: ____________________</p>
-                      )}
+                      <p className="text-slate-900">Signature: ____________________</p>
                     </div>
 
                   {data.aadhaarVerified && (

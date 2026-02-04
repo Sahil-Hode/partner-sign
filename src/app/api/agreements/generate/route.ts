@@ -421,14 +421,8 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
 
     // Signature
     doc.text('Signature: ____________________',              leftX,  yPosition)
-    if (signatureDataUrl) {
-      const format = signatureDataUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG'
-      doc.addImage(signatureDataUrl, format, rightX, yPosition - 2, 70, 25)
-      yPosition += 28
-    } else {
-      doc.text('Signature: ____________________',            rightX, yPosition)
-      yPosition += 6
-    }
+    doc.text('Signature: ____________________',              rightX, yPosition)
+    yPosition += 6
 
     // Date
     doc.text('Date: ________________________',               leftX,  yPosition)
