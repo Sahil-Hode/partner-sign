@@ -278,57 +278,64 @@ export default function DetailsPage() {
             >
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Aadhaar Verification</h3>
               <div className="space-y-4">
-                <FormInput
-                  label="Aadhaar Number"
-                  value={formData.aadhaarNumber}
-                  onChange={(e) => {
-                    handleChange('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))
-                    if (formData.aadhaarVerified) {
-                      setFormData(prev => ({ ...prev, aadhaarVerified: false }))
-                    }
-                  }}
-                  error={errors.aadhaarNumber}
-                  placeholder="Enter 12-digit Aadhaar number"
-                  inputMode="numeric"
-                  required
-                />
-                <div className="grid grid-cols-3 gap-4 items-end">
-                  <div className="col-span-2">
+                {!formData.aadhaarVerified ? (
+                  <>
                     <FormInput
-                      label="OTP"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      error={otpError}
-                      placeholder="Enter 6-digit OTP"
+                      label="Aadhaar Number"
+                      value={formData.aadhaarNumber}
+                      onChange={(e) => {
+                        handleChange('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))
+                        if (formData.aadhaarVerified) {
+                          setFormData(prev => ({ ...prev, aadhaarVerified: false }))
+                        }
+                      }}
+                      error={errors.aadhaarNumber}
+                      placeholder="Enter 12-digit Aadhaar number"
                       inputMode="numeric"
+                      required
                     />
+                    <div className="grid grid-cols-3 gap-4 items-end">
+                      <div className="col-span-2">
+                        <FormInput
+                          label="OTP"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          error={otpError}
+                          placeholder="Enter 6-digit OTP"
+                          inputMode="numeric"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleSendOtp}
+                        className="h-10 mt-6"
+                      >
+                        Send OTP
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={!otpSent}
+                      >
+                        Verify OTP
+                      </Button>
+                      <span className="text-sm text-slate-500">Not verified</span>
+                    </div>
+                    {verificationNote && (
+                      <p className="text-sm text-slate-600">{verificationNote}</p>
+                    )}
+                    {errors.aadhaarVerified && (
+                      <p className="text-sm text-red-600 font-medium">{errors.aadhaarVerified}</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-sm">✓</span>
+                    <span className="text-sm font-medium">Aadhaar verified successfully</span>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSendOtp}
-                    className="h-10 mt-6"
-                  >
-                    Send OTP
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Button
-                    type="button"
-                    onClick={handleVerifyOtp}
-                    disabled={!otpSent}
-                  >
-                    Verify OTP
-                  </Button>
-                  <span className={`text-sm ${formData.aadhaarVerified ? 'text-emerald-600' : 'text-slate-500'}`}>
-                    {formData.aadhaarVerified ? 'Verified' : 'Not verified'}
-                  </span>
-                </div>
-                {verificationNote && (
-                  <p className="text-sm text-slate-600">{verificationNote}</p>
-                )}
-                {errors.aadhaarVerified && (
-                  <p className="text-sm text-red-600 font-medium">{errors.aadhaarVerified}</p>
                 )}
               </div>
             </motion.div>
