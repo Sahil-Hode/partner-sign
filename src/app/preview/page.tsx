@@ -545,23 +545,21 @@ Detailed Platform Usage Terms are available at [www.auditveda.com/terms] and are
                     <p className="text-slate-900 mt-3">Name: <span className="bg-yellow-100 px-2 py-0.5 rounded">{signatureNameDisplay}</span></p>
                     <p className="text-slate-900">PAN: <span className="bg-yellow-100 px-2 py-0.5 rounded">{partnerPanDisplay}</span></p>
 
-                    <div className="pt-2">
-                      <p className="text-slate-900">Signature: ____________________</p>
-                    </div>
 
                   {data.aadhaarVerified && (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-sm font-medium shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-900 font-semibold">Signature valid</span>
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500">
-                          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <div className="mt-3 inline-flex items-center gap-3 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-sm font-medium shadow-sm">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500">
+                          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
+                        <span className="text-slate-900 font-semibold text-center">Signature valid</span>
                       </div>
-                      <div className="text-xs text-slate-600 border-l border-slate-300 pl-2">
+                      <div className="text-xs text-slate-600 border-l border-slate-300 pl-2 text-center">
                         <div>Digitally signed by Unique</div>
                         <div>Identification Authority of India</div>
+                        <div>Aadhaar: {maskedAadhaar}</div>
                         <div>Date: {new Date(data.aadhaarVerifiedAt || Date.now()).toLocaleString('en-GB', {
                           year: 'numeric',
                           month: '2-digit', 
