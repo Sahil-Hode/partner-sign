@@ -19,6 +19,7 @@ interface FormData {
   state: string
   date: string
   jurisdiction: string
+  place: string
   signatureName: string
   signatureDataUrl: string
 }
@@ -35,6 +36,7 @@ export default function DetailsPage() {
     state: data.state,
     date: data.date || new Date().toISOString().split('T')[0],
     jurisdiction: data.jurisdiction,
+    place: data.place,
     signatureName: data.signatureName,
     signatureDataUrl: data.signatureDataUrl || '',
   })
@@ -60,6 +62,7 @@ export default function DetailsPage() {
     if (!formData.state.trim()) newErrors.state = 'State is required'
     if (!formData.date.trim()) newErrors.date = 'Date is required'
     if (!formData.jurisdiction.trim()) newErrors.jurisdiction = 'Jurisdiction is required'
+    if (!formData.place.trim()) newErrors.place = 'Place is required'
     if (!formData.signatureName.trim()) newErrors.signatureName = 'Signature name is required'
     if (!formData.signatureDataUrl) newErrors.signatureDataUrl = 'Signature is required'
     
@@ -205,6 +208,14 @@ export default function DetailsPage() {
                   onChange={(e) => handleChange('jurisdiction', e.target.value)}
                   error={errors.jurisdiction}
                   placeholder="Enter jurisdiction"
+                  required
+                />
+                <FormInput
+                  label="Place of Signing"
+                  value={formData.place}
+                  onChange={(e) => handleChange('place', e.target.value)}
+                  error={errors.place}
+                  placeholder="e.g., Navi Mumbai"
                   required
                 />
                 <FormInput

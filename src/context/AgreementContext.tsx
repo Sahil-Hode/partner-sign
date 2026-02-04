@@ -10,6 +10,7 @@ export interface AgreementData {
   state: string
   date: string
   jurisdiction: string
+  place: string
   signatureName: string
   signatureDataUrl: string
   hasAgreed: boolean
@@ -32,6 +33,7 @@ const defaultData: AgreementData = {
   state: '',
   date: new Date().toISOString().split('T')[0],
   jurisdiction: '',
+  place: '',
   signatureName: '',
   signatureDataUrl: '',
   hasAgreed: false,

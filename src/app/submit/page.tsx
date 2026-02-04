@@ -111,6 +111,10 @@ export default function SubmitPage() {
               <p className="text-sm text-slate-500">Agreement Date</p>
               <p className="text-base font-semibold text-slate-900">{data.date}</p>
             </div>
+            <div>
+              <p className="text-sm text-slate-500">Place of Signing</p>
+              <p className="text-base font-semibold text-slate-900">{data.place}</p>
+            </div>
             <label className="flex items-start gap-3">
               <input
                 type="checkbox"
